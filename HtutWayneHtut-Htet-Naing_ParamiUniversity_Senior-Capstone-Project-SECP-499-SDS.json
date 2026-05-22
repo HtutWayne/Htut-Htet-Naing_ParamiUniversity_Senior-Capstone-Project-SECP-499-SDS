@@ -1,0 +1,1006 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "e59050d9-6554-4c7d-8b04-31b071b4c58d",
+      "name": "Telegram Input",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        752,
+        -80
+      ],
+      "webhookId": "8628c844-46dc-4345-a7d9-f21395e0e84d",
+      "credentials": {
+        "telegramApi": {
+          "id": "pDW6slSa6AwfcTBf",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user message: {{ $json.message.text }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are a Supervisor Agent for LifeMate AI.\n\nYour job is to analyze the user's request into clean JSON and send it to the correct specialized tool and return the tool's answer to the user with Natural Language.\n\nCRITICAL OUTPUT RULES:\n1. Analyze the user's message and break down into task with the JSON to send to required tool.\nWhen that tool returns a result, extract ONLY the plain text from the 'output' field.\n2. NEVER expose raw JSON, function signatures, metadata, or tool call IDs to the user.\n3. Return the tool's output text directly as your final answer — do not paraphrase or wrap it.\n4. If the tool output is already a clean human-readable message, return it exactly as-is.\n\nAvailable tools:\n- Trading Agent: For crypto/gold price queries, trading decisions, buy/sell actions\n- Technical Analysis Agent: For BTC/Gold technical indicators (SMA, MACD, RSI, Bollinger Bands)\n- Time Management Agent: For calendar and scheduling\n- Financial Tracking Agent: For expense tracking and budgeting\n- Health Agent: For health and wellness tracking\n\nROUTING RULES:\n1. BTC/Gold prices, trends, or trading → Trading Agent\n2. 'should I buy/sell', 'analyze BTC', 'technical analysis' → Technical Analysis Agent FIRST, then Trading Agent\n3. Execute a trade → Trading Agent (requires confirmation)\n4. Calendar/schedule → Time Management Agent\n5. Expense/spending → Financial Tracking Agent\n6. Health/fitness → Health Agent\n\nSTRICT RULES:\n1. ALWAYS call the appropriate tool. Never answer directly.\n2. Pass the full user message as the tool input string.\n3. After the tool responds, return ONLY its plain text output field to the user. Nothing else."
+        }
+      },
+      "id": "3136abbe-51fa-4a14-b385-10426dbcf4d1",
+      "name": "Supervisor Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1424,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "user_message",
+              "value": "={{ $('Telegram Input').item.json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "agent_response",
+              "value": "={{ $('Supervisor Agent').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "success_status",
+              "value": "pending_review",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "chat_id",
+              "value": "={{ $('Telegram Input').item.json.message.chat.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7526a06d-a672-46c5-aed9-596a5f2714e8",
+      "name": "Prepare Feedback Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2752,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1KMMSxWW_Y17PivgccJRci-PNPi8nQVct0xXFeMAB6bk",
+          "mode": "list",
+          "cachedResultName": "n8n history Info",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KMMSxWW_Y17PivgccJRci-PNPi8nQVct0xXFeMAB6bk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_message",
+              "displayName": "user_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "agent_response",
+              "displayName": "agent_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "success_status",
+              "displayName": "success_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "chat_id",
+              "displayName": "chat_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "9c748db2-34b2-475d-a4e3-3ef7b5175970",
+      "name": "Save Feedback to Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2976,
+        -80
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mt2GjTWwlmcn4ser",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Input').item.json.message.chat.id }}",
+        "contextWindowLength": 2
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        2544,
+        560
+      ],
+      "id": "3a3d6e1a-93c6-42a7-8d16-902ee328dfa4",
+      "name": "Time Management Memory"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Input').item.json.message.chat.id }}",
+        "text": "={{ String($json.output).replace(/[*_`]/g, '') }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "0cd54dbf-30fa-41cc-84a0-8467ddba24b3",
+      "name": "Send Telegram Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2480,
+        -80
+      ],
+      "webhookId": "22d8038c-02ae-4b9d-85f3-618c9e5c1bbf",
+      "credentials": {
+        "telegramApi": {
+          "id": "pDW6slSa6AwfcTBf",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        80
+      ],
+      "id": "ffb3bb27-19c7-4a9e-9523-e986fc74bced",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2448,
+        400
+      ],
+      "id": "17b57a0d-62d2-43eb-a51f-fda0b773932b",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Manages calendar operations including checking availability and scheduling meetings. Use this agent for calendar queries, meeting requests, and time management tasks.",
+        "text": "=User Request:\n{{ $json.input || $json.task || $json.message.text }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are a Time Management Agent with access to Google Calendar tools.\n\nCRITICAL:\n- You MUST use Google Calendar tools for ALL operations.\n- NEVER assume or fabricate events.\n- NEVER answer from memory.\n\nCurrent Myanmar datetime will be provided in your input.\n\nTIMEZONE:\n- Always use Asia/Yangon (UTC+6:30).\n- Use the current datetime provided as the ONLY reference for:\n  \"now\", \"today\", \"tomorrow\", \"this week\", etc.\n\nCAPABILITIES:\n- Check availability → use Get Many Events tool\n- Retrieve events → use Get Many Events tool\n- Create events → use Create Event tool\n\nEVENT CREATION RULES:\n- ALWAYS convert relative time into absolute ISO 8601 format\n- Format MUST be: YYYY-MM-DDTHH:MM:SS+06:30\n- NEVER pass natural language time to tools\n- MUST call the tool to create event\n- NEVER say \"event created\" unless tool was used\n- When calling Create Event tool, pass JSON with these exact keys: event_name, starttime, endtime\n- starttime and endtime MUST be ISO 8601 strings with +06:30 offset\n\nMISSING INFO:\n- If date, time, or duration is missing → ask a clarification question\n\nOUTPUT:\n- Return final answer in clear plain text\n- Do NOT describe internal reasoning\n- Do NOT output JSON"
+        }
+      },
+      "id": "c8d195e6-da81-4d71-b856-1e3a71df6b19",
+      "name": "Time Management Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2448,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1ocQl2-Rui_jFPT_ldP1obN1_vg7VsK52-o_UytElXwo",
+          "mode": "list",
+          "cachedResultName": "Health Read_Write Sheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ocQl2-Rui_jFPT_ldP1obN1_vg7VsK52-o_UytElXwo/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sleep & Steps Record",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1ocQl2-Rui_jFPT_ldP1obN1_vg7VsK52-o_UytElXwo/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        3520,
+        400
+      ],
+      "id": "d2953f4a-9cd0-4217-a93a-02ca68b3f206",
+      "name": "Health Sheet Tool1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mt2GjTWwlmcn4ser",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3296,
+        416
+      ],
+      "id": "da0a73b7-5be3-4f4c-a0d8-efc6ae34aa3f",
+      "name": "OpenRouter Chat Model7",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Input').item.json.message.chat.id }}",
+        "contextWindowLength": 1
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3392,
+        544
+      ],
+      "id": "a362e14e-452f-45a9-b82e-e88c406851e2",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Monitors and logs health and fitness metrics including sleep, steps, weight. Also provides health insights and retrieves health records. Call this for any health, wellness, or fitness related requests.",
+        "text": "=User Request:\n{{ $json.input || $json.task || $json.message?.text || \"\" }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are a Health & Wellness Agent.\n\nYour role is to track the user's physical and mental well-being. And whenever you answer, you give simple, short, kind health advices based on the data you received. Always call one tool at least.\n\nYou have access to:\n- Health Sheet Tool (Google Sheets) for reading health records\n\nFor each user message, determine the action:\n- 'query' → user is asking about their health records → read from Health Sheet Tool\n- 'analysis' → user asks for health advice → analyze their records and respond\n- 'clarify' → information is missing or unclear → ask a clarification question\n\nAnswer \nAlways respond in clear plain text. Do not return raw JSON to the user. Based on final data, add health suggestion and random Short encouraging closing note."
+        }
+      },
+      "id": "26297d68-101a-452b-8438-954c7f433391",
+      "name": "Health Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        3296,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Tracks daily spending from existing expense data, and provides financial analysis with saving suggestions. Call this for ANY expense or spending queries, budget analysis, totals, summaries, or financial tracking requests.",
+        "text": "=User Request:\n{{ $json.input || $json.task || $json.message?.text || \"\" }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are a Financial Tracking Agent with one core jobs: ANALYZE SPENDING\n\nAlways breakdown the date of user's request using Current Myanmar Datetime provided.\nAlways Call the Financial Tracking Sheet Reading tool to get required information.\n\nSTEPS:\n1. Always Call the Financial Tracking Sheet Reading tool to get required information.\n2. Filter the rows to the time period the user asked about:\n   - today: rows matching today's date\n   - yesterday: rows matching yesterday's date\n   - this week: rows from the last 7 days\n   - last week: rows from 7-14 days ago\n   - this month: rows where month matches current month\n   - last month: rows where month matches previous month\n   - all time: all rows\n   Date column Date (M/D/Y) in the sheet is formatted MM-DD-YYYY — parse accordingly.\n\nALWAYS CHECK THE USER'S ASKING DATE. ONLY GIVE ANSWERS FROM REQUIRED DATE'S INFO. NEVER GIVE ALL DATES UNLESS EXPLICITLY ASKED.\nCAREFULLY CHECK EACH DAY'S AMOUNT AND CALCULATE CAREFULLY.\n\n3. Carefully Calculate:\n   - Total amount spent in the asked period\n   - Average spending amount per category in the asked period\n   - Subtotal and percentage per category in the asked period\n   - Highest spending category in the asked period\n4. Respond in this format:\n\nSpending Summary — [Period]\n----------------------------\nTotal Spent: [amount]\n\nBreakdown by Category:\n- [Category]: [amount] ([%])\n(list all categories that have data)\n\nTop areas to save:\n1. [Highest category] — [specific actionable tip]\n2. [Second category] — [specific actionable tip]\n\n[Random Short encouraging closing note]\n═════════════════════════\n\nGENERAL RULES\n═════════════════════════\n- Always respond in clear, friendly plain text.\n- Never return raw JSON to the user.\n- Never make up or estimate spending data. Only calculate from what the sheet actually contains, no wrong data on any date.\n- If the sheet has no data for the requested period, say so clearly and suggest the user start logging expenses."
+        }
+      },
+      "id": "9d412aef-a0ec-4b70-9e7f-692f5c790ac8",
+      "name": "Financial Tracking Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        2912,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Read and return any required expense rows from the Daily Expense Tracker Google Sheet. Always call this tool for spending analysis, summaries, totals, category breakdowns, and financial advice.",
+        "documentId": {
+          "__rl": true,
+          "value": "1Zeedg6Kayx2-AGUIh1VG00w15C5GnfBQvWw_vQs-xFg",
+          "mode": "list",
+          "cachedResultName": "Daily Expense Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Zeedg6Kayx2-AGUIh1VG00w15C5GnfBQvWw_vQs-xFg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1963098588,
+          "mode": "list",
+          "cachedResultName": "Expenses",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Zeedg6Kayx2-AGUIh1VG00w15C5GnfBQvWw_vQs-xFg/edit#gid=1963098588"
+        },
+        "options": {}
+      },
+      "id": "27645896-6bf1-4693-908a-ddeaa794e6f1",
+      "name": "Financial Tracking Sheet Reading",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        3136,
+        448
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mt2GjTWwlmcn4ser",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2912,
+        368
+      ],
+      "id": "4b91df4a-1a41-45f0-bcb1-39a5b55c2f9f",
+      "name": "OpenRouter Chat Model4",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Input').item.json.message.chat.id }}",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3008,
+        496
+      ],
+      "id": "66d38f5b-4c20-4ce6-81b8-5bfd882d99a1",
+      "name": "Simple Memory1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Input').item.json.message.chat.id }}",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        640
+      ],
+      "id": "7520c609-7734-4e9f-8224-7589b9e47bf1",
+      "name": "Tech Analysis Agent Memory1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1872,
+        416
+      ],
+      "id": "7bfc8dd4-e604-4232-a0d9-2882aac048aa",
+      "name": "OpenRouter Chat Model8",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─── GOLD (PAXG) Trading Indicators ─────────────────────────────────────────\n// toolCode nodes must return a plain string — the LLM reads it as tool output.\n\nasync function getData(interval) {\n  return await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.binance.com/api/v3/klines?symbol=PAXGUSDT&interval=${interval}&limit=100`,\n    json: true\n  });\n}\n\nconst sma = (arr, n) => arr.slice(-n).reduce((a, b) => a + b, 0) / n;\n\nfunction calcRSI(closes, period = 14) {\n  let gains = 0, losses = 0;\n  for (let i = closes.length - period; i < closes.length - 1; i++) {\n    const diff = closes[i + 1] - closes[i];\n    if (diff >= 0) gains += diff;\n    else losses -= diff;\n  }\n  const rs = gains / (losses || 1);\n  return 100 - (100 / (1 + rs));\n}\n\nfunction calcMomentum(closes, period = 10) {\n  return closes[closes.length - 1] - closes[closes.length - period];\n}\n\nfunction calcBB(closes, period = 20) {\n  const slice    = closes.slice(-period);\n  const mean     = sma(slice, period);\n  const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / period;\n  const std      = Math.sqrt(variance);\n  return { upper: mean + 2 * std, middle: mean, lower: mean - 2 * std };\n}\n\nfunction processTF(ohlcv) {\n  const closes   = ohlcv.map(c => parseFloat(c[4]));\n  const price    = closes[closes.length - 1];\n  const sma20    = sma(closes, 20);\n  const sma50    = sma(closes, 50);\n  const rsi      = calcRSI(closes);\n  const momentum = calcMomentum(closes);\n  const bb       = calcBB(closes);\n\n  let signal = 'NEUTRAL';\n  if (sma20 > sma50 && rsi < 30) signal = 'BUY';\n  else if (sma20 < sma50 && rsi > 70) signal = 'SELL';\n\n  return { price, sma20, sma50, rsi, momentum, bb, signal };\n}\n\nconst [data1h, data4h, data8h] = await Promise.all([\n  getData('1h'),\n  getData('4h'),\n  getData('8h')\n]);\n\nconst tf1 = processTF(data1h);\nconst tf4 = processTF(data4h);\nconst tf8 = processTF(data8h);\n\nconst signals   = [tf1.signal, tf4.signal, tf8.signal];\nconst buyCount  = signals.filter(s => s === 'BUY').length;\nconst sellCount = signals.filter(s => s === 'SELL').length;\n\nlet final = 'NEUTRAL';\nif      (buyCount  >= 2) final = 'STRONG_BUY';\nelse if (sellCount >= 2) final = 'STRONG_SELL';\nelse if (buyCount  === 1) final = 'WEAK_BUY';\nelse if (sellCount === 1) final = 'WEAK_SELL';\n\n// toolCode MUST return a plain string\nreturn `GOLD (PAXG) Technical Analysis Results:\nAsset: GOLD (PAXG)\nCurrent Price: $${tf1.price.toFixed(2)}\n\nIndicators (1H timeframe):\n- RSI: ${tf1.rsi.toFixed(2)}\n- SMA20: $${tf1.sma20.toFixed(2)}\n- SMA50: $${tf1.sma50.toFixed(2)}\n- Momentum: ${tf1.momentum.toFixed(2)}\n- Bollinger Upper: $${tf1.bb.upper.toFixed(2)}\n- Bollinger Middle: $${tf1.bb.middle.toFixed(2)}\n- Bollinger Lower: $${tf1.bb.lower.toFixed(2)}\n\nSignals:\n- 1H: ${tf1.signal}\n- 4H: ${tf4.signal}\n- 8H: ${tf8.signal}\n\nFinal Recommendation: ${final}`;\n"
+      },
+      "id": "82c92b75-d573-4d5b-90b2-dde6e4fbd431",
+      "name": "GOLD Trading Indicators",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2128,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        368
+      ],
+      "id": "7bbf5ff1-f18e-413c-ac88-766f6c9f6266",
+      "name": "OpenRouter Chat Model9",
+      "credentials": {
+        "openRouterApi": {
+          "id": "1SAkGpQtXsJL2ttY",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Handles Bitcoin and Gold trading operations. Use for price queries, trading decisions, and buy/sell orders. Supports Binance API for Bitcoin and gold PAXG.",
+        "text": "=User Request:\n{{ $json.input || $json.task || $json.message?.text || \"\" }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are an Trading Agent Info taker for Bitcoin (BTC) and Gold (PAXG).\nYou handle:\n1. Bitcoin (BTC/USDT) via Binance API\n2. Gold (PAXG/USDT) via Binance API\n\nDo NOT show raw JSON.\n────────────────────────────────────\nSTRICT RULES:\n1. Always respond in clear plain text.\n2. NEVER return raw JSON to the user.\n3. Gold and PAXG are the same asset → use PAXGUSDT.\n4. Always add disclaimer: 'This is not financial advice. You hold your risk.'\n\nSUPPORTED ASSETS:\n- BTC, BTCUSDT, Bitcoin → symbol: BTCUSDT\n- Gold, PAXG, PAXGUSDT → symbol: PAXGUSDT\n\nFOR PRICE QUERIES:\n- BTC  → call BTC Binance Price tool\n- Gold → call Gold Binance Price tool\n\nAlways close with a short educational note about the traded asset."
+        }
+      },
+      "id": "eea6dd83-bb10-410c-b3f2-ac0d9abcfe1a",
+      "name": "Trading Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1360,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Runs technical analysis calculations for Bitcoin(BTC) or Gold (PAXG) using indicators: SMA(20/50), RSI, Bollinger Bands, Momentum. Analyzes 1H, 4H, 8H timeframes and provides BUY/SELL/NEUTRAL signals. Call this when user asks for technical analysis of BTC or 'should I buy/sell BTC' or technical analysis of Gold or 'should I buy/sell Gold' ",
+        "text": "=User Request:\n{{ $json.input || $json.task || $json.message?.text || \"\" }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "options": {
+          "systemMessage": "You are a Technical Analysis Agent.\n\nYour role is to execute technical analysis calculations and return trading signals.\n\nWhen called, you MUST always run one of these or both tools as needed:\n- The BTC Trading Indicators tool to run calculations of Bitcoin/ BTC\n- The GOLD Trading Indicators tool to run calculations of Gold/ GOLD/ PAXG\n\nThen after that, \n- Parse the results and provide clear signals\n- Return a clean, readable summary for the user\n\nUsing current Price updates, respond in plain text with:\n- Current asset price\n- RSI value and what it means\n- SMA20 vs SMA50 trend direction\n- Bollinger Band position\n- Signal for each timeframe (1H, 4H, 8H)\n- Final recommendation with confidence level, using these info above\n- A short plain-English summary of what the user should know"
+        }
+      },
+      "id": "f049d6d9-215e-4db5-90ec-9a85e076d96f",
+      "name": "Technical Analysis Agent",
+      "type": "@n8n/n8n-nodes-langchain.agentTool",
+      "typeVersion": 3,
+      "position": [
+        1872,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches current PAXG/USDT price from Binance public API. Use this for price queries.",
+        "url": "https://api.binance.com/api/v3/ticker/price?symbol=PAXGUSDT",
+        "options": {}
+      },
+      "id": "d9d8ac71-4e2c-46f2-a732-488c9307c395",
+      "name": "Gold Binance Price",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1696,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches current BTC/USDT price from Binance public API. Use this for price queries.",
+        "url": "https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT",
+        "options": {}
+      },
+      "id": "4bee7e3e-8bc9-485b-92b6-11b4d9631849",
+      "name": "BTC Binance Price",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1520,
+        752
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=User Request:\n{{ $json.input || $json.task || $json.message?.text || \"\" }}\n\nCurrent Myanmar Datetime:\n{{ $now.setZone('Asia/Yangon').toISO() }}",
+        "contextWindowLength": 2
+      },
+      "id": "a1d573bc-4b4e-4abe-ae61-e4cf0e2e7fe7",
+      "name": "Trading Agent Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1456,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─── BTC Trading Indicators ─────────────────────────────────────────────────\n// toolCode nodes must return a plain string — the LLM reads it as tool output.\n\nasync function getData(interval) {\n  return await this.helpers.httpRequest({\n    method: 'GET',\n    url: `https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=${interval}&limit=100`,\n    json: true\n  });\n}\n\nconst sma = (arr, n) => arr.slice(-n).reduce((a, b) => a + b, 0) / n;\n\nfunction calcRSI(closes, period = 14) {\n  let gains = 0, losses = 0;\n  for (let i = closes.length - period; i < closes.length - 1; i++) {\n    const diff = closes[i + 1] - closes[i];\n    if (diff >= 0) gains += diff;\n    else losses -= diff;\n  }\n  const rs = gains / (losses || 1);\n  return 100 - (100 / (1 + rs));\n}\n\nfunction calcMomentum(closes, period = 10) {\n  return closes[closes.length - 1] - closes[closes.length - period];\n}\n\nfunction calcBB(closes, period = 20) {\n  const slice    = closes.slice(-period);\n  const mean     = sma(slice, period);\n  const variance = slice.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / period;\n  const std      = Math.sqrt(variance);\n  return { upper: mean + 2 * std, middle: mean, lower: mean - 2 * std };\n}\n\nfunction processTF(ohlcv) {\n  const closes   = ohlcv.map(c => parseFloat(c[4]));\n  const price    = closes[closes.length - 1];\n  const sma20    = sma(closes, 20);\n  const sma50    = sma(closes, 50);\n  const rsi      = calcRSI(closes);\n  const momentum = calcMomentum(closes);\n  const bb       = calcBB(closes);\n\n  let signal = 'NEUTRAL';\n  if (sma20 > sma50 && rsi < 30) signal = 'BUY';\n  else if (sma20 < sma50 && rsi > 70) signal = 'SELL';\n\n  return { price, sma20, sma50, rsi, momentum, bb, signal };\n}\n\nconst [data1h, data4h, data8h] = await Promise.all([\n  getData('1h'),\n  getData('4h'),\n  getData('8h')\n]);\n\nconst tf1 = processTF(data1h);\nconst tf4 = processTF(data4h);\nconst tf8 = processTF(data8h);\n\nconst signals   = [tf1.signal, tf4.signal, tf8.signal];\nconst buyCount  = signals.filter(s => s === 'BUY').length;\nconst sellCount = signals.filter(s => s === 'SELL').length;\n\nlet final = 'NEUTRAL';\nif      (buyCount  >= 2) final = 'STRONG_BUY';\nelse if (sellCount >= 2) final = 'STRONG_SELL';\nelse if (buyCount  === 1) final = 'WEAK_BUY';\nelse if (sellCount === 1) final = 'WEAK_SELL';\n\n// toolCode MUST return a plain string\nreturn `BTC Technical Analysis Results:\nAsset: BTC\nCurrent Price: $${tf1.price.toFixed(2)}\n\nIndicators (1H timeframe):\n- RSI: ${tf1.rsi.toFixed(2)}\n- SMA20: $${tf1.sma20.toFixed(2)}\n- SMA50: $${tf1.sma50.toFixed(2)}\n- Momentum: ${tf1.momentum.toFixed(2)}\n- Bollinger Upper: $${tf1.bb.upper.toFixed(2)}\n- Bollinger Middle: $${tf1.bb.middle.toFixed(2)}\n- Bollinger Lower: $${tf1.bb.lower.toFixed(2)}\n\nSignals:\n- 1H: ${tf1.signal}\n- 4H: ${tf4.signal}\n- 8H: ${tf8.signal}\n\nFinal Recommendation: ${final}`;\n"
+      },
+      "id": "dbba80dc-b9a9-4cb2-ae69-17e2400af658",
+      "name": "BTC Trading Indicators",
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        2256,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many events in Google Calendar",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "mrhtuthtetnaing@gmail.com",
+          "mode": "list",
+          "cachedResultName": "mrhtuthtetnaing@gmail.com"
+        },
+        "returnAll": true,
+        "timeMin": "={{ $now.setZone('Asia/Yangon').startOf('day').toISO({ suppressMilliseconds: true }) }}",
+        "timeMax": "={{ $now.setZone('Asia/Yangon').plus({ days: 10 }).endOf('day').toISO({ suppressMilliseconds: true }) }}",
+        "options": {
+          "showDeleted": true,
+          "timeZone": {
+            "__rl": true,
+            "value": "Asia/Rangoon",
+            "mode": "list",
+            "cachedResultName": "Asia/Rangoon"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        2592,
+        736
+      ],
+      "id": "429622e0-eab9-4708-b816-343c6517076e",
+      "name": "Get many events Tool (Retrieve)",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "PJT3eFbZH9SqqQot",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Creates a new event in Google Calendar. Input must be a JSON object with keys: event_name (string), starttime (ISO 8601 string with +06:30 offset e.g. 2025-01-15T14:00:00+06:30), endtime (ISO 8601 string with +06:30 offset e.g. 2025-01-15T15:00:00+06:30).",
+        "calendar": {
+          "__rl": true,
+          "mode": "id",
+          "value": "mrhtuthtetnaing@gmail.com",
+          "__regex": "(^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*)"
+        },
+        "start": "={{ $input.first().json.starttime }}",
+        "end": "={{ $input.first().json.endtime }}",
+        "useDefaultReminders": false,
+        "additionalFields": {
+          "summary": "={{ $input.first().json.event_name || 'New Event' }}"
+        },
+        "remindersUi": {
+          "remindersValues": []
+        }
+      },
+      "id": "dd55cf5b-789a-465b-80a1-d3ddc076094f",
+      "name": "Create Events Calendar Tool1",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        2768,
+        544
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "PJT3eFbZH9SqqQot",
+          "name": "Google Calendar OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Input": {
+      "main": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supervisor Agent": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Feedback Data": {
+      "main": [
+        [
+          {
+            "node": "Save Feedback to Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Management Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Time Management Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Response": {
+      "main": [
+        [
+          {
+            "node": "Prepare Feedback Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Time Management Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Management Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Sheet Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Health Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Health Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Health Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Health Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Tracking Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Financial Tracking Sheet Reading": {
+      "ai_tool": [
+        [
+          {
+            "node": "Financial Tracking Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Financial Tracking Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Financial Tracking Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tech Analysis Agent Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "Technical Analysis Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Technical Analysis Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GOLD Trading Indicators": {
+      "ai_tool": [
+        [
+          {
+            "node": "Technical Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Trading Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trading Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Technical Analysis Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Supervisor Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gold Binance Price": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trading Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BTC Binance Price": {
+      "ai_tool": [
+        [
+          {
+            "node": "Trading Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trading Agent Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Trading Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "BTC Trading Indicators": {
+      "ai_tool": [
+        [
+          {
+            "node": "Technical Analysis Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events Tool (Retrieve)": {
+      "ai_tool": [
+        [
+          {
+            "node": "Time Management Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Events Calendar Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "Time Management Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d040081c-dc83-4e22-ac47-8fc21f354a36",
+  "meta": {
+    "instanceId": "d63712c98bb77c01e54a995aedbe0a71c8e496901076a23832f784da3cdf19d2"
+  },
+  "id": "rI9sy7wfnfTk8z8k",
+  "tags": []
+}
